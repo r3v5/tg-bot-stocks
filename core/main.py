@@ -15,10 +15,12 @@ from tinkoff.invest import CandleInterval, Client, HistoricCandle, Quotation, Su
 from tinkoff.invest.utils import now
 import pytz
 
-TOKEN: str = 't.b7eKSJEp3fpSiiv4mVt4fWwKIxaMHM1lDMtpGsPTeyl850b9Y4MluXYv-EQrj1vEu7QfkNwqGqGPfTW9N6EvTg'
+TINKOFF_TOKEN: str = 't.b7eKSJEp3fpSiiv4mVt4fWwKIxaMHM1lDMtpGsPTeyl850b9Y4MluXYv-EQrj1vEu7QfkNwqGqGPfTW9N6EvTg'
 TELEGRAM_TOKEN: str = '6202414503:AAGmVIVsV_WluHKzeRXbF89gHuK4rfgVJj8'
 TELEGRAM_CHANNEL: str = '@warrenbaffetbot'
 
+logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 __all__ = (
     "get_intervals",
@@ -32,10 +34,6 @@ __all__ = (
     "dataclass_from_dict",
     "datetime_range_floor",
 )
-
-
-logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 def send_message(text):
     res = requests.get('https://api.telegram.org/bot{}/sendMessage'.format(TELEGRAM_TOKEN), params=dict(
@@ -370,7 +368,7 @@ upro_data = {"Объем": upro_volumes, "Лоты": upro_lots, "Цена": upro
 upro_db = []
 
 def check_abnormal_volume_gazp():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Gazprom
         for candle in client.get_all_candles(
             figi=GAZP.figi,
@@ -474,7 +472,7 @@ def check_abnormal_volume_gazp():
 
 
 def check_abnormal_volume_vtbr():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on VTB Bank
         for candle in client.get_all_candles(
             figi=VTBR.figi,
@@ -578,7 +576,7 @@ def check_abnormal_volume_vtbr():
 
 
 def check_abnormal_volume_lkoh():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on LUKOIL
         for candle in client.get_all_candles(
             figi=LKOH.figi,
@@ -682,7 +680,7 @@ def check_abnormal_volume_lkoh():
 
 
 def check_abnormal_volume_yndx():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Yandex Inc.
         for candle in client.get_all_candles(
             figi=YNDX.figi,
@@ -786,7 +784,7 @@ def check_abnormal_volume_yndx():
 
 
 def check_abnormal_volume_mgnt():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Magnit
         for candle in client.get_all_candles(
             figi=MGNT.figi,
@@ -890,7 +888,7 @@ def check_abnormal_volume_mgnt():
 
 
 def check_abnormal_volume_poly():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Polymetall
         for candle in client.get_all_candles(
             figi=POLY.figi,
@@ -994,7 +992,7 @@ def check_abnormal_volume_poly():
 
 
 def check_abnormal_volume_sberp():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Sber bank prevs
         for candle in client.get_all_candles(
             figi=SBERP.figi,
@@ -1098,7 +1096,7 @@ def check_abnormal_volume_sberp():
 
 
 def check_abnormal_volume_chmf():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Severstal
         for candle in client.get_all_candles(
             figi=CHMF.figi,
@@ -1202,7 +1200,7 @@ def check_abnormal_volume_chmf():
 
 
 def check_abnormal_volume_alrs():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=ALRS.figi,
@@ -1306,7 +1304,7 @@ def check_abnormal_volume_alrs():
 
 
 def check_abnormal_volume_mmk():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=MMK.figi,
@@ -1410,7 +1408,7 @@ def check_abnormal_volume_mmk():
 
 
 def check_abnormal_volume_phor():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=PHOR.figi,
@@ -1514,7 +1512,7 @@ def check_abnormal_volume_phor():
 
 
 def check_abnormal_volume_sngs():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=SNGS.figi,
@@ -1618,7 +1616,7 @@ def check_abnormal_volume_sngs():
 
 
 def check_abnormal_volume_sngsp():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=SNGSP.figi,
@@ -1722,7 +1720,7 @@ def check_abnormal_volume_sngsp():
 
 
 def check_abnormal_volume_nlmk():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=NLMK.figi,
@@ -1826,7 +1824,7 @@ def check_abnormal_volume_nlmk():
 
 
 def check_abnormal_volume_plzl():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=PLZL.figi,
@@ -1930,7 +1928,7 @@ def check_abnormal_volume_plzl():
 
 
 def check_abnormal_volume_tatn():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=TATN.figi,
@@ -2034,7 +2032,7 @@ def check_abnormal_volume_tatn():
 
 
 def check_abnormal_volume_mtlr():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=MTLR.figi,
@@ -2138,7 +2136,7 @@ def check_abnormal_volume_mtlr():
 
 
 def check_abnormal_volume_mtss():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=MTSS.figi,
@@ -2242,7 +2240,7 @@ def check_abnormal_volume_mtss():
 
 
 def check_abnormal_volume_moex():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=MOEX.figi,
@@ -2346,7 +2344,7 @@ def check_abnormal_volume_moex():
 
 
 def check_abnormal_volume_rual():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=RUAL.figi,
@@ -2450,7 +2448,7 @@ def check_abnormal_volume_rual():
 
 
 def check_abnormal_volume_aflt():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=AFLT.figi,
@@ -2554,7 +2552,7 @@ def check_abnormal_volume_aflt():
 
 
 def check_abnormal_volume_cbom():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=CBOM.figi,
@@ -2658,7 +2656,7 @@ def check_abnormal_volume_cbom():
 
 
 def check_abnormal_volume_ozon():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=OZON.figi,
@@ -2762,7 +2760,7 @@ def check_abnormal_volume_ozon():
 
 
 def check_abnormal_volume_afks():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=OZON.figi,
@@ -2866,7 +2864,7 @@ def check_abnormal_volume_afks():
 
 
 def check_abnormal_volume_smlt():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=SMLT.figi,
@@ -2970,7 +2968,7 @@ def check_abnormal_volume_smlt():
 
 
 def check_abnormal_volume_spbe():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=SPBE.figi,
@@ -3074,7 +3072,7 @@ def check_abnormal_volume_spbe():
 
 
 def check_abnormal_volume_pikk():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=PIKK.figi,
@@ -3178,7 +3176,7 @@ def check_abnormal_volume_pikk():
 
 
 def check_abnormal_volume_irao():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=IRAO.figi,
@@ -3282,7 +3280,7 @@ def check_abnormal_volume_irao():
 
 
 def check_abnormal_volume_sibn():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=SIBN.figi,
@@ -3386,7 +3384,7 @@ def check_abnormal_volume_sibn():
 
 
 def check_abnormal_volume_rasp():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=RASP.figi,
@@ -3490,7 +3488,7 @@ def check_abnormal_volume_rasp():
 
 
 def check_abnormal_volume_sgzh():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=SGZH.figi,
@@ -3594,7 +3592,7 @@ def check_abnormal_volume_sgzh():
 
 
 def check_abnormal_volume_dsky():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=DSKY.figi,
@@ -3698,7 +3696,7 @@ def check_abnormal_volume_dsky():
 
 
 def check_abnormal_volume_trnfp():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=TRNFP.figi,
@@ -3802,7 +3800,7 @@ def check_abnormal_volume_trnfp():
 
 
 def check_abnormal_volume_rnft():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=RNFT.figi,
@@ -3906,7 +3904,7 @@ def check_abnormal_volume_rnft():
 
 
 def check_abnormal_volume_five():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=FIVE.figi,
@@ -3996,17 +3994,21 @@ def check_abnormal_volume_five():
             
         if abnormal_volume > THRESHOLD or abnormal_price_changes > THRESHOLD:
             if df["Покупка"].iloc[-1] > df["Продажа"].iloc[-1]:
-                send_message(f'#{FIVE.ticker} {FIVE.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{FIVE.ticker} {FIVE.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in five_db:
+                    five_db.append(f'#{FIVE.ticker} {FIVE.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{FIVE.ticker} {FIVE.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
             else:
-                send_message(f'#{FIVE.ticker} {FIVE.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{FIVE.ticker} {FIVE.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in five_db:
+                    five_db.append(f'#{FIVE.ticker} {FIVE.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{FIVE.ticker} {FIVE.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
    
     return 0
 
 
 def check_abnormal_volume_bspb():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=BSPB.figi,
@@ -4096,17 +4098,21 @@ def check_abnormal_volume_bspb():
             
         if abnormal_volume > THRESHOLD or abnormal_price_changes > THRESHOLD:
             if df["Покупка"].iloc[-1] > df["Продажа"].iloc[-1]:
-                send_message(f'#{BSPB.ticker} {BSPB.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{BSPB.ticker} {BSPB.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in bspb_db:
+                    bspb_db.append(f'#{BSPB.ticker} {BSPB.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{BSPB.ticker} {BSPB.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
             else:
-                send_message(f'#{BSPB.ticker} {BSPB.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{BSPB.ticker} {BSPB.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in bspb_db:
+                    bspb_db.append(f'#{BSPB.ticker} {BSPB.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{BSPB.ticker} {BSPB.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
    
     return 0
 
 
 def check_abnormal_volume_flot():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=FLOT.figi,
@@ -4196,17 +4202,21 @@ def check_abnormal_volume_flot():
             
         if abnormal_volume > THRESHOLD or abnormal_price_changes > THRESHOLD:
             if df["Покупка"].iloc[-1] > df["Продажа"].iloc[-1]:
-                send_message(f'#{FLOT.ticker} {FLOT.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{FLOT.ticker} {FLOT.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in flot_db:
+                    flot_db.append(f'#{FLOT.ticker} {FLOT.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{FLOT.ticker} {FLOT.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
             else:
-                send_message(f'#{FLOT.ticker} {FLOT.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{FLOT.ticker} {FLOT.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in flot_db:
+                    flot_db.append(f'#{FLOT.ticker} {FLOT.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{FLOT.ticker} {FLOT.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
    
     return 0
 
 
 def check_abnormal_volume_uwgn():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=UWGN.figi,
@@ -4296,17 +4306,21 @@ def check_abnormal_volume_uwgn():
             
         if abnormal_volume > THRESHOLD or abnormal_price_changes > THRESHOLD:
             if df["Покупка"].iloc[-1] > df["Продажа"].iloc[-1]:
-                send_message(f'#{UWGN.ticker} {UWGN.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{UWGN.ticker} {UWGN.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in uwgn_db:
+                    uwgn_db.append(f'#{UWGN.ticker} {UWGN.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{UWGN.ticker} {UWGN.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
             else:
-                send_message(f'#{UWGN.ticker} {UWGN.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{UWGN.ticker} {UWGN.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in uwgn_db:
+                    uwgn_db.append(f'#{UWGN.ticker} {UWGN.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{UWGN.ticker} {UWGN.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(df["Объем"].iloc[-1])} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
    
     return 0
 
 
 def check_abnormal_volume_mtlrp():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=MTLRP.figi,
@@ -4396,17 +4410,21 @@ def check_abnormal_volume_mtlrp():
             
         if abnormal_volume > THRESHOLD or abnormal_price_changes > THRESHOLD:
             if df["Покупка"].iloc[-1] > df["Продажа"].iloc[-1]:
-                send_message(f'#{MTLRP.ticker} {MTLRP.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{MTLRP.ticker} {MTLRP.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in mtlrp_db:
+                    mtlrp_db.append(f'#{MTLRP.ticker} {MTLRP.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{MTLRP.ticker} {MTLRP.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
             else:
-                send_message(f'#{MTLRP.ticker} {MTLRP.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{MTLRP.ticker} {MTLRP.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in mtlrp_db:
+                    mtlrp_db.append(f'#{MTLRP.ticker} {MTLRP.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{MTLRP.ticker} {MTLRP.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
    
     return 0
 
 
 def check_abnormal_volume_iskj():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=ISKJ.figi,
@@ -4496,17 +4514,21 @@ def check_abnormal_volume_iskj():
             
         if abnormal_volume > THRESHOLD or abnormal_price_changes > THRESHOLD:
             if df["Покупка"].iloc[-1] > df["Продажа"].iloc[-1]:
-                send_message(f'#{ISKJ.ticker} {ISKJ.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{ISKJ.ticker} {ISKJ.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in iskj_db:
+                    iskj_db.append(f'#{ISKJ.ticker} {ISKJ.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{ISKJ.ticker} {ISKJ.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
             else:
-                send_message(f'#{ISKJ.ticker} {ISKJ.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{ISKJ.ticker} {ISKJ.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in iskj_db:
+                    iskj_db.append(f'#{ISKJ.ticker} {ISKJ.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{ISKJ.ticker} {ISKJ.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
    
     return 0
 
 
 def check_abnormal_volume_upro():
-    with Client(TOKEN) as client:        
+    with Client(TINKOFF_TOKEN) as client:        
         # try to track abnormal volumes on Alrosa
         for candle in client.get_all_candles(
             figi=UPRO.figi,
@@ -4596,12 +4618,107 @@ def check_abnormal_volume_upro():
             
         if abnormal_volume > THRESHOLD or abnormal_price_changes > THRESHOLD:
             if df["Покупка"].iloc[-1] > df["Продажа"].iloc[-1]:
-                send_message(f'#{UPRO.ticker} {UPRO.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_upro(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{UPRO.ticker} {UPRO.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_upro(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in upro_db:
+                    upro_db.append(f'#{UPRO.ticker} {UPRO.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_upro(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{UPRO.ticker} {UPRO.name}\n🟩 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_upro(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
             else:
-                send_message(f'#{UPRO.ticker} {UPRO.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_upro(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
-                time.sleep(3)
+                if f'#{UPRO.ticker} {UPRO.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_upro(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.' not in upro_db:
+                    upro_db.append(f'#{UPRO.ticker} {UPRO.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_upro(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    send_message(f'#{UPRO.ticker} {UPRO.name}\n🔻 Аномальный объем\n{calculate_net_change(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 1])}\n{get_stock_volumes(make_million_volumes_on_upro(df["Объем"].iloc[-1]))} ({df["Лоты"].iloc[-1]})\nПокупка: {df["Покупка"].iloc[-1]}% Продажа: {df["Продажа"].iloc[-1]}%\nВремя: {convert_time_to_moscow(df["Время"].iloc[-1])}\nЦена: {df["Цена"].iloc[-1]} ₽\n{calculate_net_change_per_day(df["Цена"].iloc[-1], df["Цена"].iloc[-1 - 840])}\nЗаметил Баффет на Уораннах.')
+                    time.sleep(3)
    
     return 0
 
 
+def main():
+    while True:
+        try:
+            check_abnormal_volume_gazp()
+            time.sleep(10)
+            check_abnormal_volume_vtbr()
+            time.sleep(10)
+            check_abnormal_volume_lkoh()
+            time.sleep(10)
+            check_abnormal_volume_yndx()
+            time.sleep(10)
+            check_abnormal_volume_mgnt()
+            time.sleep(10)
+            check_abnormal_volume_poly()
+            time.sleep(10)
+            check_abnormal_volume_sberp()
+            time.sleep(10)
+            check_abnormal_volume_chmf()
+            time.sleep(10)
+            check_abnormal_volume_alrs()
+            time.sleep(10)
+            check_abnormal_volume_mmk()
+            time.sleep(10)
+            check_abnormal_volume_phor()
+            time.sleep(10)
+            check_abnormal_volume_sngs()
+            time.sleep(10)
+            check_abnormal_volume_sngsp()
+            time.sleep(10)
+            check_abnormal_volume_nlmk()
+            time.sleep(10)
+            check_abnormal_volume_plzl()
+            time.sleep(10)
+            check_abnormal_volume_tatn()
+            time.sleep(10)
+            check_abnormal_volume_mtlr()
+            time.sleep(10)
+            check_abnormal_volume_mtss()
+            time.sleep(10)
+            check_abnormal_volume_moex()
+            time.sleep(10)
+            check_abnormal_volume_rual()
+            time.sleep(10)
+            check_abnormal_volume_aflt()
+            time.sleep(10)
+            check_abnormal_volume_cbom()
+            time.sleep(10)
+            check_abnormal_volume_ozon()
+            time.sleep(10)
+            check_abnormal_volume_afks()
+            time.sleep(10)
+            check_abnormal_volume_smlt()
+            time.sleep(10)
+            check_abnormal_volume_spbe()
+            time.sleep(10)
+            check_abnormal_volume_pikk()
+            time.sleep(10)
+            check_abnormal_volume_irao()
+            time.sleep(10)
+            check_abnormal_volume_sibn()
+            time.sleep(10)
+            check_abnormal_volume_rasp()
+            time.sleep(10)
+            check_abnormal_volume_sgzh()
+            time.sleep(10)
+            check_abnormal_volume_dsky()
+            time.sleep(10)
+            check_abnormal_volume_trnfp()
+            time.sleep(10)
+            check_abnormal_volume_rnft()
+            time.sleep(10)
+            check_abnormal_volume_five()
+            time.sleep(10)
+            check_abnormal_volume_bspb()
+            time.sleep(10)
+            check_abnormal_volume_flot()
+            time.sleep(10)
+            check_abnormal_volume_uwgn()
+            time.sleep(10)
+            check_abnormal_volume_mtlrp()
+            time.sleep(10)
+            check_abnormal_volume_iskj()
+            time.sleep(10)
+            check_abnormal_volume_upro()
+            time.sleep(10)
+
+        except AioRequestError as are:
+                logger.error("Client error %s", are)
+
+if __name__ == "__main__":
+    main()
