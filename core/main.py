@@ -177,47 +177,47 @@ class Stock:
     def threshold(self, threshold_value):
         self._threshold = threshold_value
 
-GAZP: Stock = Stock(ticker="GAZP", name="Газпром", figi="BBG004730RP0", length_of_df=61724, threshold=10900000) # 109,000,000 milions
-VTBR: Stock = Stock(ticker="VTBR", name="ВТБ", figi="BBG004730ZJ9", length_of_df=58453, threshold=6700000) # 67,000,000
-LKOH: Stock = Stock(ticker="LKOH", name="Лукойл", figi="BBG004731032", length_of_df=55016, threshold=8900000) # 89,595,258
-YNDX: Stock = Stock(ticker="YNDX", name="ЯНДЕКС", figi="BBG006L8G4H1", length_of_df=55652, threshold=4100000) # min abnormal 41,000,000
-MGNT: Stock = Stock(ticker="MGNT", name="Магнит", figi="BBG004RVFCY3", length_of_df=45114, threshold=3900000) # 39,000,000
-POLY: Stock = Stock(ticker="POLY", name="Polymetal International", figi="BBG004PYF2N3", length_of_df=56891, threshold=2600000) # 26,000,000
-SBERP: Stock = Stock(ticker="SBERP", name="Сбербанк России - привилегированные акции", figi="BBG0047315Y7", length_of_df=52157, threshold=2400000) # 24,000,000
-CHMF: Stock = Stock(ticker="CHMF", name="Северсталь", figi="BBG00475K6C3", length_of_df=46712, threshold=1400000) # 14,000,000
-ALRS: Stock = Stock(ticker="ALRS", name="АЛРОСА", figi="BBG004S68B31", length_of_df=39065, threshold=2100000) # 21,000,000
-MMK: Stock = Stock(ticker="MAGN", name="MMK", figi="BBG004S68507", length_of_df=49532, threshold=1300000) # 13,000,,000
+GAZP: Stock = Stock(ticker="GAZP", name="Газпром", figi="BBG004730RP0", length_of_df=61724, threshold=109000000) # 109,000,000 milions
+VTBR: Stock = Stock(ticker="VTBR", name="ВТБ", figi="BBG004730ZJ9", length_of_df=58453, threshold=67000000) # 67,000,000
+LKOH: Stock = Stock(ticker="LKOH", name="Лукойл", figi="BBG004731032", length_of_df=55016, threshold=89000000) # 89,595,258
+YNDX: Stock = Stock(ticker="YNDX", name="ЯНДЕКС", figi="BBG006L8G4H1", length_of_df=55652, threshold=41000000) # min abnormal 41,000,000
+MGNT: Stock = Stock(ticker="MGNT", name="Магнит", figi="BBG004RVFCY3", length_of_df=45114, threshold=39000000) # 39,000,000
+POLY: Stock = Stock(ticker="POLY", name="Polymetal International", figi="BBG004PYF2N3", length_of_df=56891, threshold=26000000) # 26,000,000
+SBERP: Stock = Stock(ticker="SBERP", name="Сбербанк России - привилегированные акции", figi="BBG0047315Y7", length_of_df=52157, threshold=24000000) # 24,000,000
+CHMF: Stock = Stock(ticker="CHMF", name="Северсталь", figi="BBG00475K6C3", length_of_df=46712, threshold=14000000) # 14,000,000
+ALRS: Stock = Stock(ticker="ALRS", name="АЛРОСА", figi="BBG004S68B31", length_of_df=39065, threshold=21000000) # 21,000,000
+MMK: Stock = Stock(ticker="MAGN", name="MMK", figi="BBG004S68507", length_of_df=49532, threshold=13000000) # 13,000,,000
 PHOR: Stock = Stock(ticker="PHOR", name="ФосАгро", figi="BBG004S689R0", length_of_df=38268, threshold=1300000) # 13,000,000
-SNGS: Stock = Stock(ticker="SNGS", name="Сургутнефтегаз", figi="BBG0047315D0", length_of_df=35861, threshold=17830000) # 178,370,000
-SNGSP: Stock = Stock(ticker="SNGSP", name="Сургутнефтегаз - привилегированные акции", figi="BBG004S681M2", length_of_df=38350, threshold=3427000) # 34,270,000
-NLMK: Stock = Stock(ticker="NLMK", name="НЛМК", figi="BBG004S681B4", length_of_df=43048, threshold=1270000) # 12,700,000
-PLZL: Stock = Stock(ticker="PLZL", name="Полюс", figi="BBG000R607Y3", length_of_df=46937, threshold=4400000) # 44,000,000
-TATN: Stock = Stock(ticker="TATN", name="Татнефть", figi="BBG004RVFFC0", length_of_df=50691, threshold=1760000) # 17,600,000
-MTLR: Stock = Stock(ticker="MTLR", name="Мечел", figi="BBG004S68598", length_of_df=51040, threshold=2500000) # 25,000,000
-MTSS: Stock = Stock(ticker="MTSS", name="МТС", figi="BBG004S681W1", length_of_df=43312, threshold=1980000) # 19,800,000
-MOEX: Stock = Stock(ticker="MOEX", name="Московская Биржа", figi="BBG004730JJ5", length_of_df=47942, threshold=1130000) # 11,300,000
-RUAL: Stock = Stock(ticker="RUAL", name="ОК РУСАЛ", figi="BBG008F2T3T2", length_of_df=47438, threshold=980000) # 9,800,000
-AFLT: Stock = Stock(ticker="AFLT", name="Аэрофлот", figi="BBG004S683W7", length_of_df=53529, threshold=1930000) # 19,300,000
-CBOM: Stock = Stock(ticker="CBOM", name="Московский кредитный банк", figi="BBG009GSYN76", length_of_df=28825, threshold=1480000) # 14,800,000
-OZON: Stock = Stock(ticker="OZON", name="Озон Холдингс", figi="BBG00Y91R9T3", length_of_df=42607, threshold=1060000) # 10,600,000
-AFKS: Stock = Stock(ticker="AFKS", name="АФК Система", figi="BBG004S68614", length_of_df=42938, threshold=1120000) # 11,200,000
-SMLT: Stock = Stock(ticker="SMLT", name="Группа компаний Самолет", figi="BBG00F6NKQX3", length_of_df=37732, threshold=2540000) # 25,400,000
+SNGS: Stock = Stock(ticker="SNGS", name="Сургутнефтегаз", figi="BBG0047315D0", length_of_df=35861, threshold=178300000) # 178,370,000
+SNGSP: Stock = Stock(ticker="SNGSP", name="Сургутнефтегаз - привилегированные акции", figi="BBG004S681M2", length_of_df=38350, threshold=34270000) # 34,270,000
+NLMK: Stock = Stock(ticker="NLMK", name="НЛМК", figi="BBG004S681B4", length_of_df=43048, threshold=12700000) # 12,700,000
+PLZL: Stock = Stock(ticker="PLZL", name="Полюс", figi="BBG000R607Y3", length_of_df=46937, threshold=44000000) # 44,000,000
+TATN: Stock = Stock(ticker="TATN", name="Татнефть", figi="BBG004RVFFC0", length_of_df=50691, threshold=17600000) # 17,600,000
+MTLR: Stock = Stock(ticker="MTLR", name="Мечел", figi="BBG004S68598", length_of_df=51040, threshold=25000000) # 25,000,000
+MTSS: Stock = Stock(ticker="MTSS", name="МТС", figi="BBG004S681W1", length_of_df=43312, threshold=19800000) # 19,800,000
+MOEX: Stock = Stock(ticker="MOEX", name="Московская Биржа", figi="BBG004730JJ5", length_of_df=47942, threshold=11300000) # 11,300,000
+RUAL: Stock = Stock(ticker="RUAL", name="ОК РУСАЛ", figi="BBG008F2T3T2", length_of_df=47438, threshold=9800000) # 9,800,000
+AFLT: Stock = Stock(ticker="AFLT", name="Аэрофлот", figi="BBG004S683W7", length_of_df=53529, threshold=19300000) # 19,300,000
+CBOM: Stock = Stock(ticker="CBOM", name="Московский кредитный банк", figi="BBG009GSYN76", length_of_df=28825, threshold=14800000) # 14,800,000
+OZON: Stock = Stock(ticker="OZON", name="Озон Холдингс", figi="BBG00Y91R9T3", length_of_df=42607, threshold=10600000) # 10,600,000
+AFKS: Stock = Stock(ticker="AFKS", name="АФК Система", figi="BBG004S68614", length_of_df=42938, threshold=11200000) # 11,200,000
+SMLT: Stock = Stock(ticker="SMLT", name="Группа компаний Самолет", figi="BBG00F6NKQX3", length_of_df=37732, threshold=25400000) # 25,400,000
 SPBE: Stock = Stock(ticker="SPBE", name="СПБ Биржа", figi="BBG002GHV6L9", length_of_df=18672,threshold=2210000) # 22,100,000
-PIKK: Stock = Stock(ticker="PIKK", name="ПИК-Специализированный застройщик", figi="BBG004S68BH6", length_of_df=32626, threshold=600000) # 6,000,000
-IRAO: Stock = Stock(ticker="IRAO", name="ИНТЕР РАО", figi="BBG004S68473", length_of_df=47133, threshold=860000) # 8,600,000
-SIBN: Stock = Stock(ticker="SIBN", name="Газпром нефть", figi="BBG004S684M6", length_of_df=39096, threshold=1830000) # 18,300,000
-RASP: Stock = Stock(ticker="RASP", name="Распадская", figi="BBG004S68696", length_of_df=23487, threshold=1660000) # 16,600,000
-SGZH: Stock = Stock(ticker="SGZH", name="Сегежа Групп", figi="BBG0100R9963", length_of_df=44001, threshold=750000) # 7,500,000
-DSKY: Stock = Stock(ticker="DSKY", name="Детский мир", figi="BBG000BN56Q9", length_of_df=18411, threshold=620000) # 6,200,000
-TRNFP: Stock = Stock(ticker="TRNFP", name="Транснефть - привилегированные акции", figi="BBG00475KHX6", length_of_df=13999, threshold=2630000) # 26,300,000
-RNFT: Stock = Stock(ticker="RNFT", name="РуссНефть", figi="BBG00F9XX7H4", length_of_df=26665, threshold=3280000) # 32,800,000
+PIKK: Stock = Stock(ticker="PIKK", name="ПИК-Специализированный застройщик", figi="BBG004S68BH6", length_of_df=32626, threshold=6000000) # 6,000,000
+IRAO: Stock = Stock(ticker="IRAO", name="ИНТЕР РАО", figi="BBG004S68473", length_of_df=47133, threshold=8600000) # 8,600,000
+SIBN: Stock = Stock(ticker="SIBN", name="Газпром нефть", figi="BBG004S684M6", length_of_df=39096, threshold=18300000) # 18,300,000
+RASP: Stock = Stock(ticker="RASP", name="Распадская", figi="BBG004S68696", length_of_df=23487, threshold=16600000) # 16,600,000
+SGZH: Stock = Stock(ticker="SGZH", name="Сегежа Групп", figi="BBG0100R9963", length_of_df=44001, threshold=7500000) # 7,500,000
+DSKY: Stock = Stock(ticker="DSKY", name="Детский мир", figi="BBG000BN56Q9", length_of_df=18411, threshold=6200000) # 6,200,000
+TRNFP: Stock = Stock(ticker="TRNFP", name="Транснефть - привилегированные акции", figi="BBG00475KHX6", length_of_df=13999, threshold=26300000) # 26,300,000
+RNFT: Stock = Stock(ticker="RNFT", name="РуссНефть", figi="BBG00F9XX7H4", length_of_df=26665, threshold=32800000) # 32,800,000
 FIVE: Stock = Stock(ticker="FIVE", name="X5 Retail Group", figi="BBG00JXPFBN0", length_of_df=36727, threshold=520000) # 5,200,000
-BSPB: Stock = Stock(ticker="BSPB", name="Банк Санкт-Петербург", figi="BBG000QJW156", length_of_df=29351, threshold=2340000) # 23,400,000
-FLOT: Stock = Stock(ticker="FLOT", name="Совкомфлот", figi="BBG000R04X57", length_of_df=43706, threshold=2900000) # 29,000,000
-UWGN: Stock = Stock(ticker="UWGN", name="НПК ОВК", figi="BBG008HD3V85", length_of_df=21247, threshold=2240000) # 22,400,000
-MTLRP: Stock = Stock(ticker="MTLRP", name="Мечел - привилегированные акции", figi="BBG004S68FR6", length_of_df=28526, threshold=1060000) # 10,600,000
-ISKJ: Stock = Stock(ticker="ISKJ", name="Институт Стволовых Клеток Человека", figi="BBG000N16BP3", length_of_df=21446,threshold=1380000) # 13,800,000
-UPRO: Stock = Stock(ticker="UPRO", name="Юнипро", figi="BBG004S686W0", length_of_df=26409, threshold=1570000) # 15,700,000
+BSPB: Stock = Stock(ticker="BSPB", name="Банк Санкт-Петербург", figi="BBG000QJW156", length_of_df=29351, threshold=23400000) # 23,400,000
+FLOT: Stock = Stock(ticker="FLOT", name="Совкомфлот", figi="BBG000R04X57", length_of_df=43706, threshold=29000000) # 29,000,000
+UWGN: Stock = Stock(ticker="UWGN", name="НПК ОВК", figi="BBG008HD3V85", length_of_df=21247, threshold=22400000) # 22,400,000
+MTLRP: Stock = Stock(ticker="MTLRP", name="Мечел - привилегированные акции", figi="BBG004S68FR6", length_of_df=28526, threshold=10600000) # 10,600,000
+ISKJ: Stock = Stock(ticker="ISKJ", name="Институт Стволовых Клеток Человека", figi="BBG000N16BP3", length_of_df=21446,threshold=13800000) # 13,800,000
+UPRO: Stock = Stock(ticker="UPRO", name="Юнипро", figi="BBG004S686W0", length_of_df=26409, threshold=15700000) # 15,700,000
 
 # threshold coefficient for detecting abnormal volumes and abnormal price changes
 THRESHOLD: float = 5.0
