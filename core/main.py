@@ -187,7 +187,7 @@ SBERP: Stock = Stock(ticker="SBERP", name="Сбербанк России - пр�
 CHMF: Stock = Stock(ticker="CHMF", name="Северсталь", figi="BBG00475K6C3", length_of_df=46712, threshold=14000000) # 14,000,000
 ALRS: Stock = Stock(ticker="ALRS", name="АЛРОСА", figi="BBG004S68B31", length_of_df=39065, threshold=21000000) # 21,000,000
 MMK: Stock = Stock(ticker="MAGN", name="MMK", figi="BBG004S68507", length_of_df=49532, threshold=13000000) # 13,000,,000
-PHOR: Stock = Stock(ticker="PHOR", name="ФосАгро", figi="BBG004S689R0", length_of_df=38268, threshold=1300000) # 13,000,000
+PHOR: Stock = Stock(ticker="PHOR", name="ФосАгро", figi="BBG004S689R0", length_of_df=38268, threshold=13000000) # 13,000,000
 SNGS: Stock = Stock(ticker="SNGS", name="Сургутнефтегаз", figi="BBG0047315D0", length_of_df=35861, threshold=178300000) # 178,370,000
 SNGSP: Stock = Stock(ticker="SNGSP", name="Сургутнефтегаз - привилегированные акции", figi="BBG004S681M2", length_of_df=38350, threshold=34270000) # 34,270,000
 NLMK: Stock = Stock(ticker="NLMK", name="НЛМК", figi="BBG004S681B4", length_of_df=43048, threshold=12700000) # 12,700,000
@@ -211,7 +211,7 @@ SGZH: Stock = Stock(ticker="SGZH", name="Сегежа Групп", figi="BBG0100
 DSKY: Stock = Stock(ticker="DSKY", name="Детский мир", figi="BBG000BN56Q9", length_of_df=18411, threshold=6200000) # 6,200,000
 TRNFP: Stock = Stock(ticker="TRNFP", name="Транснефть - привилегированные акции", figi="BBG00475KHX6", length_of_df=13999, threshold=26300000) # 26,300,000
 RNFT: Stock = Stock(ticker="RNFT", name="РуссНефть", figi="BBG00F9XX7H4", length_of_df=26665, threshold=32800000) # 32,800,000
-FIVE: Stock = Stock(ticker="FIVE", name="X5 Retail Group", figi="BBG00JXPFBN0", length_of_df=36727, threshold=520000) # 5,200,000
+FIVE: Stock = Stock(ticker="FIVE", name="X5 Retail Group", figi="BBG00JXPFBN0", length_of_df=36727, threshold=5200000) # 5,200,000
 BSPB: Stock = Stock(ticker="BSPB", name="Банк Санкт-Петербург", figi="BBG000QJW156", length_of_df=29351, threshold=23400000) # 23,400,000
 FLOT: Stock = Stock(ticker="FLOT", name="Совкомфлот", figi="BBG000R04X57", length_of_df=43706, threshold=29000000) # 29,000,000
 UWGN: Stock = Stock(ticker="UWGN", name="НПК ОВК", figi="BBG008HD3V85", length_of_df=21247, threshold=22400000) # 22,400,000
