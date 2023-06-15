@@ -15,11 +15,8 @@ from decimal import Decimal
 from tinkoff.invest import CandleInterval, Client, HistoricCandle, Quotation, SubscriptionInterval
 from tinkoff.invest.utils import now
 import pytz
-from threading import Thread
 
 TINKOFF_TOKEN: str = 't.b7eKSJEp3fpSiiv4mVt4fWwKIxaMHM1lDMtpGsPTeyl850b9Y4MluXYv-EQrj1vEu7QfkNwqGqGPfTW9N6EvTg'
-
-
 TELEGRAM_TOKEN: str = '6202414503:AAGmVIVsV_WluHKzeRXbF89gHuK4rfgVJj8'
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 TELEGRAM_CHANNEL: int = -1001935956578
@@ -46,89 +43,22 @@ def send_message(text):
         chat_id=TELEGRAM_CHANNEL, text=text
     ))
 
-'''MoneyValue — используется для параметров, у которых есть денежный эквивалент. Возьмем для примера стоимость ценных бумаг — тип состоит из трех параметров:
-1) currency — строковый ISO-код валюты, например RUB или USD;
-2) units — целая часть суммы;
-3) nano — дробная часть суммы, миллиардные доли единицы.
-'''
-# Quotation type = MoneyValue. We need to convert this to decimal in order to fetch price per share
-def quotation_to_decimal(quotation: Quotation) -> Decimal:
-    fractional = quotation.nano / Decimal("10e8")
-    return Decimal(quotation.units) + fractional
-
-def get_stock_volumes(_input: int):
-    return f'{_input:,} ₽'
-
-def get_final_float_stock_volumes(_input: int):
-    return f'{_input:,} ₽'
-
-def get_final_lots(_lots: int):
-    return f'{_lots:,} шт.'
-
-def calculate_net_change(current_closing_price: int, prev_closing_price: int):
-    return f'Изменение цены: {round(((current_closing_price - prev_closing_price) / prev_closing_price * 100), 2)}%'
-
-def calculate_net_change_per_day(current_closing_price: int, yesterday_closing_price: int):
-    # current price minus 840 indexes in order to fetch price index yesterday for 1 minute candle
-    return f'Изменение за день: {round(((current_closing_price - yesterday_closing_price) / yesterday_closing_price * 100), 2)}%'
-
-def calculate_net_change_float(current_closing_price: float, prev_closing_price: float):
-    return f'Изменение цены: {round(((current_closing_price - prev_closing_price) / prev_closing_price * 100), 2)}%'
-
-def calculate_net_change_per_day_float(current_closing_price: float, yesterday_closing_price: float):
-    # current price minus 840 indexes in order to fetch price index yesterday for 1 minute candle
-    return f'Изменение за день: {round(((current_closing_price - yesterday_closing_price) / yesterday_closing_price * 100), 2)}%'
-
-def make_million_volumes_on_float_stock_prices(price: int):
-    price = str(price)
-    price += '0000'
-    return int(price)
-
-def make_million_volumes_on_int_stock_prices(price: int):
-    price = str(price)
-    price += '0'
-    return int(price)
-
-def make_million_volumes_on_sngs(price: int):
-    price = str(price)
-    price += '000'
-    return int(price)
-
-def make_million_volumes_on_sngsp(price: int):
-    price = str(price)
-    price += '00'
-    return int(price)
-
-def make_million_volumes_on_cbom(price: int):
-    price = str(price)
-    price += '00'
-    return int(price)
-
-def make_million_volumes_on_afks(price: int):
-    price = str(price)
-    price += '00'
-    return int(price)
-
-def make_million_volumes_on_irao(price: int):
-    price = str(price)
-    price += '00'
-    return int(price)
-
-def make_million_volumes_on_upro(price: int):
-    price = str(price)
-    price += '000'
-    return int(price)
-
-def convert_time_to_moscow(input_date: str):
-    datetime_utc = datetime.strptime(str(input_date), '%Y-%m-%d %H:%M:%S%z')
-    utc_timezone = pytz.timezone('UTC')
-    moscow_timezone = pytz.timezone('Europe/Moscow')
-    datetime_moscow = datetime_utc.astimezone(moscow_timezone)
-    datetime_moscow = datetime_moscow
-    output_date = datetime_moscow.strftime('%Y-%m-%d %H:%M:%S')
-    return output_date
+class InstrumentTradingData:
+    def __set_name__(self, owner, name):
+        self.name = "_" + name
+    
+    def __get__(self, instance, owner):
+        return instance.__dict__[self.name]
+    
+    def __set__(self, instance, value):
+        instance.__dict__[self.name] = value
 
 class Stock:
+    ticker: InstrumentTradingData = InstrumentTradingData()
+    name: InstrumentTradingData = InstrumentTradingData()
+    figi: InstrumentTradingData = InstrumentTradingData()
+    length_of_df: InstrumentTradingData = InstrumentTradingData()
+    threshold: InstrumentTradingData = InstrumentTradingData()
 
     def __init__(self, ticker: str, name: str, figi: str, length_of_df: int, threshold: int):
         self.ticker = ticker
@@ -137,46 +67,104 @@ class Stock:
         self.length_of_df = length_of_df
         self.threshold = threshold
     
-    @property
-    def ticker(self):
-        return self._ticker
+    @staticmethod
+    #MoneyValue — используется для параметров, у которых есть денежный эквивалент. Возьмем для примера стоимость ценных бумаг — тип состоит из трех параметров:
+    #1) currency — строковый ISO-код валюты, например RUB или USD;
+    #2) units — целая часть суммы;
+    #3) nano — дробная часть суммы, миллиардные доли единицы.
+    # Quotation type = MoneyValue. We need to convert this to decimal in order to fetch price per share
+    def quotation_to_decimal(quotation: Quotation) -> Decimal:
+        fractional = quotation.nano / Decimal("10e8")
+        return Decimal(quotation.units) + fractional
     
-    @property
-    def name(self):
-        return self._name
+    @staticmethod
+    def get_stock_volumes(_input: int):
+        return f'{_input:,} ₽'
     
-    @property
-    def figi(self):
-        return self._figi
+    @staticmethod
+    def get_final_float_stock_volumes(_input: int):
+        return f'{_input:,} ₽'
     
-    @property
-    def length_of_df(self):
-        return self._length_of_df
+    @staticmethod
+    def get_final_lots(_lots: int):
+        return f'{_lots:,} шт.'
     
-    @property
-    def threshold(self):
-        return self._threshold
+    @staticmethod
+    def calculate_net_change(current_closing_price: int, prev_closing_price: int):
+        return f'Изменение цены: {round(((current_closing_price - prev_closing_price) / prev_closing_price * 100), 2)}%'
     
-    @ticker.setter
-    def ticker(self, ticker_value):
-        self._ticker = ticker_value
+    @staticmethod
+    def calculate_net_change_per_day(current_closing_price: int, yesterday_closing_price: int):
+    # current price minus 840 indexes in order to fetch price index yesterday for 1 minute candle
+        return f'Изменение за день: {round(((current_closing_price - yesterday_closing_price) / yesterday_closing_price * 100), 2)}%'
     
-    @name.setter
-    def name(self, name_value):
-        self._name = name_value
+    @staticmethod
+    def calculate_net_change_float(current_closing_price: float, prev_closing_price: float):
+        return f'Изменение цены: {round(((current_closing_price - prev_closing_price) / prev_closing_price * 100), 2)}%'
     
-    @figi.setter
-    def figi(self, figi_value):
-        self._figi = figi_value
+    @staticmethod
+    def calculate_net_change_per_day_float(current_closing_price: float, yesterday_closing_price: float):
+    # current price minus 840 indexes in order to fetch price index yesterday for 1 minute candle
+        return f'Изменение за день: {round(((current_closing_price - yesterday_closing_price) / yesterday_closing_price * 100), 2)}%'
     
-    @length_of_df.setter
-    def length_of_df(self, length_of_df_value):
-        self._length_of_df = length_of_df_value
+    @staticmethod
+    def make_million_volumes_on_float_stock_prices(price: int):
+        price = str(price)
+        price += '0000'
+        return int(price)
     
-    @threshold.setter
-    def threshold(self, threshold_value):
-        self._threshold = threshold_value
-
+    @staticmethod
+    def make_million_volumes_on_int_stock_prices(price: int):
+        price = str(price)
+        price += '0'
+        return int(price)
+    
+    @staticmethod
+    def make_million_volumes_on_sngs(price: int):
+        price = str(price)
+        price += '000'
+        return int(price)
+    
+    @staticmethod
+    def make_million_volumes_on_sngsp(price: int):
+        price = str(price)
+        price += '00'
+        return int(price)
+    
+    @staticmethod
+    def make_million_volumes_on_cbom(price: int):
+        price = str(price)
+        price += '00'
+        return int(price)
+    
+    @staticmethod
+    def make_million_volumes_on_afks(price: int):
+        price = str(price)
+        price += '00'
+        return int(price)
+    
+    @staticmethod
+    def make_million_volumes_on_irao(price: int):
+        price = str(price)
+        price += '00'
+        return int(price)
+    
+    @staticmethod
+    def make_million_volumes_on_upro(price: int):
+        price = str(price)
+        price += '000'
+        return int(price)
+    
+    @staticmethod
+    def convert_time_to_moscow(input_date: str):
+        datetime_utc = datetime.strptime(str(input_date), '%Y-%m-%d %H:%M:%S%z')
+        utc_timezone = pytz.timezone('UTC')
+        moscow_timezone = pytz.timezone('Europe/Moscow')
+        datetime_moscow = datetime_utc.astimezone(moscow_timezone)
+        datetime_moscow = datetime_moscow
+        output_date = datetime_moscow.strftime('%Y-%m-%d %H:%M:%S')
+        return output_date
+    
 GAZP: Stock = Stock(ticker="GAZP", name="Газпром", figi="BBG004730RP0", length_of_df=61724, threshold=109000000) # 109,000,000 milions
 VTBR: Stock = Stock(ticker="VTBR", name="ВТБ", figi="BBG004730ZJ9", length_of_df=58453, threshold=67000000) # 67,000,000
 LKOH: Stock = Stock(ticker="LKOH", name="Лукойл", figi="BBG004731032", length_of_df=55016, threshold=89000000) # 89,595,258
@@ -219,10 +207,7 @@ MTLRP: Stock = Stock(ticker="MTLRP", name="Мечел - привилегиров
 ISKJ: Stock = Stock(ticker="ISKJ", name="Институт Стволовых Клеток Человека", figi="BBG000N16BP3", length_of_df=21446,threshold=13800000) # 13,800,000
 UPRO: Stock = Stock(ticker="UPRO", name="Юнипро", figi="BBG004S686W0", length_of_df=26409, threshold=15700000) # 15,700,000
 
-# threshold coefficient for detecting abnormal volumes and abnormal price changes
-THRESHOLD: float = 5.0
-
-class LogOnlyCandlesStrategy:
+class AbnormalVolumesStrategy:
     """This class is responsible for a strategy. You can put here
     your methods for your strategy."""
 
@@ -254,783 +239,783 @@ class LogOnlyCandlesStrategy:
                     self.candles.append(candle)
                     logger.debug("Found %s - figi=%s", candle, self.figi)
                     
-                    if self.figi == GAZP.figi and int(candle.volume * quotation_to_decimal(candle.close)) > GAZP.threshold:
+                    if self.figi == GAZP.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > GAZP.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{GAZP.ticker} {GAZP.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{GAZP.ticker} {GAZP.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{GAZP.ticker} {GAZP.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{GAZP.ticker} {GAZP.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == VTBR.figi and int(candle.volume * quotation_to_decimal(candle.close)) > VTBR.threshold:
+                    if self.figi == VTBR.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > VTBR.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{VTBR.ticker} {VTBR.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{VTBR.ticker} {VTBR.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{VTBR.ticker} {VTBR.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{VTBR.ticker} {VTBR.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == LKOH.figi and int(candle.volume * quotation_to_decimal(candle.close)) > LKOH.threshold:
+                    if self.figi == LKOH.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > LKOH.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{LKOH.ticker} {LKOH.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{LKOH.ticker} {LKOH.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{LKOH.ticker} {LKOH.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{LKOH.ticker} {LKOH.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == YNDX.figi and int(candle.volume * quotation_to_decimal(candle.close)) > YNDX.threshold:
+                    if self.figi == YNDX.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > YNDX.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{YNDX.ticker} {YNDX.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{YNDX.ticker} {YNDX.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{YNDX.ticker} {YNDX.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{YNDX.ticker} {YNDX.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == MGNT.figi and int(candle.volume * quotation_to_decimal(candle.close)) > MGNT.threshold:
+                    if self.figi == MGNT.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > MGNT.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{MGNT.ticker} {MGNT.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MGNT.ticker} {MGNT.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{MGNT.ticker} {MGNT.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MGNT.ticker} {MGNT.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == POLY.figi and int(candle.volume * quotation_to_decimal(candle.close)) > POLY.threshold:
+                    if self.figi == POLY.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > POLY.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{POLY.ticker} {POLY.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{POLY.ticker} {POLY.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{POLY.ticker} {POLY.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{POLY.ticker} {POLY.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == SBERP.figi and int(candle.volume * quotation_to_decimal(candle.close)) > SBERP.threshold:
+                    if self.figi == SBERP.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > SBERP.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{SBERP.ticker} {SBERP.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SBERP.ticker} {SBERP.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{SBERP.ticker} {SBERP.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SBERP.ticker} {SBERP.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == CHMF.figi and int(candle.volume * quotation_to_decimal(candle.close)) > CHMF.threshold:
+                    if self.figi == CHMF.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > CHMF.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{CHMF.ticker} {CHMF.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{CHMF.ticker} {CHMF.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{CHMF.ticker} {CHMF.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{CHMF.ticker} {CHMF.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == ALRS.figi and int(candle.volume * quotation_to_decimal(candle.close)) > ALRS.threshold:
+                    if self.figi == ALRS.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > ALRS.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{ALRS.ticker} {ALRS.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{ALRS.ticker} {ALRS.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{ALRS.ticker} {ALRS.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{ALRS.ticker} {ALRS.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == MMK.figi and int(candle.volume * quotation_to_decimal(candle.close)) > MMK.threshold:
+                    if self.figi == MMK.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > MMK.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{MMK.ticker} {MMK.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MMK.ticker} {MMK.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{MMK.ticker} {MMK.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MMK.ticker} {MMK.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == PHOR.figi and int(candle.volume * quotation_to_decimal(candle.close)) > PHOR.threshold:
+                    if self.figi == PHOR.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > PHOR.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{PHOR.ticker} {PHOR.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{PHOR.ticker} {PHOR.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{PHOR.ticker} {PHOR.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{PHOR.ticker} {PHOR.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == SNGS.figi and int(candle.volume * quotation_to_decimal(candle.close)) > SNGS.threshold:
+                    if self.figi == SNGS.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > SNGS.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{SNGS.ticker} {SNGS.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_sngs(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SNGS.ticker} {SNGS.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_sngs(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{SNGS.ticker} {SNGS.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_sngs(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SNGS.ticker} {SNGS.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_sngs(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == SNGSP.figi and int(candle.volume * quotation_to_decimal(candle.close)) > SNGSP.threshold:
+                    if self.figi == SNGSP.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > SNGSP.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{SNGSP.ticker} {SNGSP.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_sngsp(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SNGSP.ticker} {SNGSP.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_sngsp(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{SNGSP.ticker} {SNGSP.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_sngsp(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SNGSP.ticker} {SNGSP.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_sngsp(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == NLMK.figi and int(candle.volume * quotation_to_decimal(candle.close)) > NLMK.threshold:
+                    if self.figi == NLMK.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > NLMK.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{NLMK.ticker} {NLMK.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{NLMK.ticker} {NLMK.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{NLMK.ticker} {NLMK.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{NLMK.ticker} {NLMK.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == PLZL.figi and int(candle.volume * quotation_to_decimal(candle.close)) > PLZL.threshold:
+                    if self.figi == PLZL.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > PLZL.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{PLZL.ticker} {PLZL.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{PLZL.ticker} {PLZL.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{PLZL.ticker} {PLZL.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{PLZL.ticker} {PLZL.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == TATN.figi and int(candle.volume * quotation_to_decimal(candle.close)) > TATN.threshold:
+                    if self.figi == TATN.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > TATN.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{TATN.ticker} {TATN.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{TATN.ticker} {TATN.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{TATN.ticker} {TATN.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{TATN.ticker} {TATN.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == MTLR.figi and int(candle.volume * quotation_to_decimal(candle.close)) > MTLR.threshold:
+                    if self.figi == MTLR.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > MTLR.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{MTLR.ticker} {MTLR.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MTLR.ticker} {MTLR.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{MTLR.ticker} {MTLR.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MTLR.ticker} {MTLR.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == MTSS.figi and int(candle.volume * quotation_to_decimal(candle.close)) > MTSS.threshold:
+                    if self.figi == MTSS.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > MTSS.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{MTSS.ticker} {MTSS.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MTSS.ticker} {MTSS.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{MTSS.ticker} {MTSS.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MTSS.ticker} {MTSS.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == MOEX.figi and int(candle.volume * quotation_to_decimal(candle.close)) > MOEX.threshold:
+                    if self.figi == MOEX.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > MOEX.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{MOEX.ticker} {MOEX.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MOEX.ticker} {MOEX.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{MOEX.ticker} {MOEX.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MOEX.ticker} {MOEX.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == RUAL.figi and int(candle.volume * quotation_to_decimal(candle.close)) > RUAL.threshold:
+                    if self.figi == RUAL.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > RUAL.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{RUAL.ticker} {RUAL.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{RUAL.ticker} {RUAL.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{RUAL.ticker} {RUAL.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{RUAL.ticker} {RUAL.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == AFLT.figi and int(candle.volume * quotation_to_decimal(candle.close)) > AFLT.threshold:
+                    if self.figi == AFLT.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > AFLT.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{AFLT.ticker} {AFLT.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{AFLT.ticker} {AFLT.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{AFLT.ticker} {AFLT.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{AFLT.ticker} {AFLT.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == CBOM.figi and int(candle.volume * quotation_to_decimal(candle.close)) > CBOM.threshold:
+                    if self.figi == CBOM.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > CBOM.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{CBOM.ticker} {CBOM.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_cbom(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{CBOM.ticker} {CBOM.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_cbom(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{CBOM.ticker} {CBOM.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_cbom(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{CBOM.ticker} {CBOM.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_cbom(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == OZON.figi and int(candle.volume * quotation_to_decimal(candle.close)) > OZON.threshold:
+                    if self.figi == OZON.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > OZON.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{OZON.ticker} {OZON.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{OZON.ticker} {OZON.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{OZON.ticker} {OZON.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{OZON.ticker} {OZON.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == AFKS.figi and int(candle.volume * quotation_to_decimal(candle.close)) > AFKS.threshold:
+                    if self.figi == AFKS.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > AFKS.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{AFKS.ticker} {AFKS.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_afks(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{AFKS.ticker} {AFKS.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_afks(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{AFKS.ticker} {AFKS.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_afks(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{AFKS.ticker} {AFKS.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_afks(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == SMLT.figi and int(candle.volume * quotation_to_decimal(candle.close)) > SMLT.threshold:
+                    if self.figi == SMLT.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > SMLT.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{SMLT.ticker} {SMLT.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SMLT.ticker} {SMLT.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{SMLT.ticker} {SMLT.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SMLT.ticker} {SMLT.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == SPBE.figi and int(candle.volume * quotation_to_decimal(candle.close)) > SPBE.threshold:
+                    if self.figi == SPBE.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > SPBE.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{SPBE.ticker} {SPBE.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SPBE.ticker} {SPBE.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{SPBE.ticker} {SPBE.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SPBE.ticker} {SPBE.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == PIKK.figi and int(candle.volume * quotation_to_decimal(candle.close)) > PIKK.threshold:
+                    if self.figi == PIKK.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > PIKK.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{PIKK.ticker} {PIKK.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{PIKK.ticker} {PIKK.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{PIKK.ticker} {PIKK.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{PIKK.ticker} {PIKK.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == IRAO.figi and int(candle.volume * quotation_to_decimal(candle.close)) > IRAO.threshold:
+                    if self.figi == IRAO.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > IRAO.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{IRAO.ticker} {IRAO.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_irao(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{IRAO.ticker} {IRAO.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_irao(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{IRAO.ticker} {IRAO.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_irao(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{IRAO.ticker} {IRAO.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_irao(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == SIBN.figi and int(candle.volume * quotation_to_decimal(candle.close)) > SIBN.threshold:
+                    if self.figi == SIBN.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > SIBN.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{SIBN.ticker} {SIBN.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SIBN.ticker} {SIBN.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{SIBN.ticker} {SIBN.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SIBN.ticker} {SIBN.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == RASP.figi and int(candle.volume * quotation_to_decimal(candle.close)) > RASP.threshold:
+                    if self.figi == RASP.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > RASP.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{RASP.ticker} {RASP.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{RASP.ticker} {RASP.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{RASP.ticker} {RASP.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{RASP.ticker} {RASP.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == SGZH.figi and int(candle.volume * quotation_to_decimal(candle.close)) > SGZH.threshold:
+                    if self.figi == SGZH.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > SGZH.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{SGZH.ticker} {SGZH.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close)))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SGZH.ticker} {SGZH.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close)))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{SGZH.ticker} {SGZH.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close)))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{SGZH.ticker} {SGZH.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close)))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == DSKY.figi and int(candle.volume * quotation_to_decimal(candle.close)) > DSKY.threshold:
+                    if self.figi == DSKY.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > DSKY.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{DSKY.ticker} {DSKY.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{DSKY.ticker} {DSKY.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{DSKY.ticker} {DSKY.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{DSKY.ticker} {DSKY.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == TRNFP.figi and int(candle.volume * quotation_to_decimal(candle.close)) > TRNFP.threshold:
+                    if self.figi == TRNFP.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > TRNFP.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{TRNFP.ticker} {TRNFP.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{TRNFP.ticker} {TRNFP.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{TRNFP.ticker} {TRNFP.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{TRNFP.ticker} {TRNFP.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == RNFT.figi and int(candle.volume * quotation_to_decimal(candle.close)) > RNFT.threshold:
+                    if self.figi == RNFT.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > RNFT.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{RNFT.ticker} {RNFT.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{RNFT.ticker} {RNFT.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{RNFT.ticker} {RNFT.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{RNFT.ticker} {RNFT.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == FIVE.figi and int(candle.volume * quotation_to_decimal(candle.close)) > FIVE.threshold:
+                    if self.figi == FIVE.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > FIVE.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{FIVE.ticker} {FIVE.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{FIVE.ticker} {FIVE.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{FIVE.ticker} {FIVE.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{FIVE.ticker} {FIVE.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == BSPB.figi and int(candle.volume * quotation_to_decimal(candle.close)) > BSPB.threshold:
+                    if self.figi == BSPB.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > BSPB.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{BSPB.ticker} {BSPB.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{BSPB.ticker} {BSPB.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{BSPB.ticker} {BSPB.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{BSPB.ticker} {BSPB.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == FLOT.figi and int(candle.volume * quotation_to_decimal(candle.close)) > FLOT.threshold:
+                    if self.figi == FLOT.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > FLOT.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{FLOT.ticker} {FLOT.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{FLOT.ticker} {FLOT.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{FLOT.ticker} {FLOT.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{FLOT.ticker} {FLOT.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == UWGN.figi and int(candle.volume * quotation_to_decimal(candle.close)) > UWGN.threshold:
+                    if self.figi == UWGN.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > UWGN.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{UWGN.ticker} {UWGN.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{UWGN.ticker} {UWGN.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{UWGN.ticker} {UWGN.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(int(candle.volume * quotation_to_decimal(candle.close)))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{UWGN.ticker} {UWGN.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(int(candle.volume * Stock.quotation_to_decimal(candle.close)))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == MTLRP.figi and int(candle.volume * quotation_to_decimal(candle.close)) > MTLRP.threshold:
+                    if self.figi == MTLRP.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > MTLRP.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{MTLRP.ticker} {MTLRP.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MTLRP.ticker} {MTLRP.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{MTLRP.ticker} {MTLRP.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{MTLRP.ticker} {MTLRP.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == ISKJ.figi and int(candle.volume * quotation_to_decimal(candle.close)) > ISKJ.threshold:
+                    if self.figi == ISKJ.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > ISKJ.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{ISKJ.ticker} {ISKJ.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{ISKJ.ticker} {ISKJ.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{ISKJ.ticker} {ISKJ.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_int_stock_prices(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{ISKJ.ticker} {ISKJ.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_int_stock_prices(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                     
-                    if self.figi == UPRO.figi and int(candle.volume * quotation_to_decimal(candle.close)) > UPRO.threshold:
+                    if self.figi == UPRO.figi and int(candle.volume * Stock.quotation_to_decimal(candle.close)) > UPRO.threshold:
                         # BUYING VOLUME AND SELLING VOLUME
                         if candle.high == candle.low:
                             BV = 0
                             SV = 0
                         else:
-                            BV = (float(candle.volume) * (float(quotation_to_decimal(candle.close)) - float(quotation_to_decimal(candle.low)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
-                            SV = (float(candle.volume) * (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.close)))) / (float(quotation_to_decimal(candle.high)) - float(quotation_to_decimal(candle.low)))
+                            BV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.close)) - float(Stock.quotation_to_decimal(candle.low)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
+                            SV = (float(candle.volume) * (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.close)))) / (float(Stock.quotation_to_decimal(candle.high)) - float(Stock.quotation_to_decimal(candle.low)))
                             TP = BV + SV
                             BVP = round((BV / TP) * 100)
                             SVP = round((SV / TP) * 100)
                 
                         if BVP > SVP:
-                            send_message(f'#{UPRO.ticker} {UPRO.name}\n🟩 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_upro(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{UPRO.ticker} {UPRO.name}\n🟩 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_upro(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
                         else:
-                            send_message(f'#{UPRO.ticker} {UPRO.name}\n🔻 Аномальный объем\n{calculate_net_change(int(quotation_to_decimal(candle.close)), int(quotation_to_decimal(candle.open)))}\n{get_stock_volumes(make_million_volumes_on_upro(int(candle.volume * quotation_to_decimal(candle.close))))} ({get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {convert_time_to_moscow(candle.time)}\nЦена: {int(quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
+                            send_message(f'#{UPRO.ticker} {UPRO.name}\n🔻 Аномальный объем\n{Stock.calculate_net_change(int(Stock.quotation_to_decimal(candle.close)), int(Stock.quotation_to_decimal(candle.open)))}\n{Stock.get_stock_volumes(Stock.make_million_volumes_on_upro(int(candle.volume * Stock.quotation_to_decimal(candle.close))))} ({Stock.get_final_lots(candle.volume)})\nПокупка: {BVP}% Продажа: {SVP}%\nВремя: {Stock.convert_time_to_moscow(candle.time)}\nЦена: {int(Stock.quotation_to_decimal(candle.close))} ₽\n \nЗаметил Бот Баффет на Уораннах.')
                             time.sleep(3)
 
 
@@ -1091,7 +1076,7 @@ async def run_strategy(portfolio, timeframe, minutes_back, check_interval):
     async with AsyncClient(token=TINKOFF_TOKEN, app_name="TinkoffApp") as client:
         strategy_tasks = []
         for instrument in portfolio:
-            strategy = LogOnlyCandlesStrategy(
+            strategy = AbnormalVolumesStrategy(
                 figi=instrument,
                 timeframe=timeframe,
                 minutes_back=minutes_back,
