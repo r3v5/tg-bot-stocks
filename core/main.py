@@ -190,7 +190,7 @@ CBOM: Stock = Stock(ticker="CBOM", name="Московский кредитный
 OZON: Stock = Stock(ticker="OZON", name="Озон Холдингс", figi="BBG00Y91R9T3", length_of_df=42607, threshold=10600000) # 10,600,000
 AFKS: Stock = Stock(ticker="AFKS", name="АФК Система", figi="BBG004S68614", length_of_df=42938, threshold=11200000) # 11,200,000
 SMLT: Stock = Stock(ticker="SMLT", name="Группа компаний Самолет", figi="BBG00F6NKQX3", length_of_df=37732, threshold=25400000) # 25,400,000
-SPBE: Stock = Stock(ticker="SPBE", name="СПБ Биржа", figi="BBG002GHV6L9", length_of_df=18672,threshold=2210000) # 22,100,000
+SPBE: Stock = Stock(ticker="SPBE", name="СПБ Биржа", figi="BBG002GHV6L9", length_of_df=18672,threshold=22100000) # 22,100,000
 PIKK: Stock = Stock(ticker="PIKK", name="ПИК-Специализированный застройщик", figi="BBG004S68BH6", length_of_df=32626, threshold=6000000) # 6,000,000
 IRAO: Stock = Stock(ticker="IRAO", name="ИНТЕР РАО", figi="BBG004S68473", length_of_df=47133, threshold=8600000) # 8,600,000
 SIBN: Stock = Stock(ticker="SIBN", name="Газпром нефть", figi="BBG004S684M6", length_of_df=39096, threshold=18300000) # 18,300,000
