@@ -17,9 +17,7 @@ httpcore==0.17.2
 httpx==0.24.1
 idna==3.4
 multidict==6.0.4
-numpy==1.25.0
 packaging==23.1
-pandas==2.0.2
 protobuf==4.23.3
 pur==7.1.0
 pycodestyle==2.10.0

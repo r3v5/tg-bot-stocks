@@ -1,7 +1,5 @@
 import asyncio
 import logging
-import os
-import sys
 from termcolor import colored
 import time
 import requests
@@ -9,8 +7,6 @@ import telegram
 from typing import List, Optional
 from tinkoff.invest import AioRequestError, AsyncClient, CandleInterval, HistoricCandle, Quotation
 from tinkoff.invest.async_services import AsyncServices
-import pandas as pd
-import numpy as np
 from datetime import timedelta
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
