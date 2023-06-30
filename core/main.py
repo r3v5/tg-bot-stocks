@@ -1268,11 +1268,15 @@ async def run_strategy(portfolio, timeframe, minutes_back, check_interval):
             )
             strategy_tasks.append(asyncio.create_task(strategy.start()))
         await asyncio.gather(*strategy_tasks)
-
-
     
 if __name__ == "__main__":
     portfolio = {
+        ABRD.figi,
+        ROSN.figi,
+        QIWI.figi,
+        MVID.figi,
+        TCSG.figi,
+        SBER.figi,
         BANEP.figi,
         VKCO.figi,
         GAZP.figi, 
@@ -1319,7 +1323,7 @@ if __name__ == "__main__":
     }
     timeframe = CandleInterval.CANDLE_INTERVAL_1_MIN
     minutes_back = 2
-    check_interval = 10  # seconds to check interval for new completed candle
+    check_interval = 30  # seconds to check interval for new completed candle
 
     loop = asyncio.get_event_loop()
     task = loop.create_task(
