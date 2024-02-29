@@ -14,10 +14,8 @@ from tinkoff.invest import CandleInterval, Client, HistoricCandle, Quotation, Su
 from tinkoff.invest.utils import now
 import pytz
 
-TINKOFF_TOKEN: str = 't.b7eKSJEp3fpSiiv4mVt4fWwKIxaMHM1lDMtpGsPTeyl850b9Y4MluXYv-EQrj1vEu7QfkNwqGqGPfTW9N6EvTg'
-TELEGRAM_TOKEN: str = '6202414503:AAGmVIVsV_WluHKzeRXbF89gHuK4rfgVJj8'
+
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
-TELEGRAM_CHANNEL: int = -1001935956578
 #@warrenbaffetbot
 
 logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.DEBUG)
