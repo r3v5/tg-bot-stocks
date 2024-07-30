@@ -1,1 +1,1 @@
-# tg-bot-stocks
+# Buffettsbot stocks is implemented and deployed to Railway Cloud using Python that calculates abnormal volumes in stocks on Moscow Exchange in live mode and sends alerts to customers with trading data.
